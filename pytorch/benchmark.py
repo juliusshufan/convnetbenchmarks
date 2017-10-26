@@ -17,7 +17,7 @@ args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 archs = {'alexnet': 128,
          'vgg11': 64,
-         #'inception_v3': 128,
+         'inception_v3': 128,
          'resnet50': 128}
 steps = 10 # nb of steps in loop to average perf
 nDryRuns = 10
@@ -43,7 +43,10 @@ print('Running on device: %s' % (device_name))
 def main():
     for arch, batch_size in archs.items():
         t = time.time()
-        data_ = torch.randn(batch_size, 3, 224, 224)
+        if arch=='inception_v3':
+            data_ = torch.randn(batch_size, 3, 299, 299)
+        else:
+            data_ = torch.randn(batch_size, 3, 224, 224)
         target_ = torch.arange(1, batch_size + 1).long()        
         net = models.__dict__[arch]() # no need to load pre-trained weights for dummy data
         
@@ -57,7 +60,7 @@ def main():
         
         net.eval()
         
-        print('ModelType: %s, Kernels: %s Input shape: %dx3x224x224' % (
+        print('ModelType: %s, Kernels: %s Input shape: %dx3x224x224 (Inception-v3 will be 3*299*299)' % (
                 arch, kernel, batch_size))
         data, target = Variable(data_), Variable(target_)
         
